@@ -15,7 +15,6 @@ from . import (
     util,
 )
 from .about import __version__  # noqa: F401
-from .cli.info import info  # noqa: F401
 from .errors import Errors
 from .glossary import explain  # noqa: F401
 from .language import Language
@@ -79,6 +78,12 @@ def load(
         exclude=exclude,
         config=config,
     )
+
+
+def info(*args, **kwargs):
+    from .cli.info import info as cli_info
+
+    return cli_info(*args, **kwargs)
 
 
 def blank(

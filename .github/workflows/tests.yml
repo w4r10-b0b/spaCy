@@ -48,7 +48,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: ["3.10", "3.11", "3.12", "3.13"]
+        python_version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     runs-on: ${{ matrix.os }}
 
@@ -100,39 +100,39 @@ jobs:
           python -m spacy download ca_core_news_sm
           python -m spacy download ca_core_news_md
           python -c "import spacy; nlp=spacy.load('ca_core_news_sm'); doc=nlp('test')"
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test download_url in info CLI"
         run: |
           python -W error -m spacy info ca_core_news_sm | grep -q download_url
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test no warnings on load (#11713)"
         run: |
           python -W error -c "import ca_core_news_sm; nlp = ca_core_news_sm.load(); doc=nlp('test')"
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test convert CLI"
         run: |
           python -m spacy convert extra/example_data/ner_example_data/ner-token-per-line-conll2003.json .
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test debug config CLI"
         run: |
           python -m spacy init config -p ner -l ca ner.cfg
           python -m spacy debug config ner.cfg --paths.train ner-token-per-line-conll2003.spacy --paths.dev ner-token-per-line-conll2003.spacy
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test debug data CLI"
         run: |
           # will have errors due to sparse data, check for summary in output
           python -m spacy debug data ner.cfg --paths.train ner-token-per-line-conll2003.spacy --paths.dev ner-token-per-line-conll2003.spacy | grep -q Summary
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test train CLI"
         run: |
           python -m spacy train ner.cfg --paths.train ner-token-per-line-conll2003.spacy --paths.dev ner-token-per-line-conll2003.spacy --training.max_steps 10 --gpu-id -1
-        if: matrix.python_version == '3.9'
+        if: matrix.python_version == '3.10'
 
       - name: "Test assemble CLI"
         run: |

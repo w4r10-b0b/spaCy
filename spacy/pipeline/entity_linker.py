@@ -48,6 +48,49 @@ def make_entity_linker_scorer():
     return entity_linker_score
 
 
+def EntityLinker_v1(
+    vocab: Vocab,
+    model: Model,
+    name: str = "entity_linker",
+    *,
+    labels_discard: Iterable[str],
+    n_sents: int,
+    incl_prior: bool,
+    incl_context: bool,
+    entity_vector_length: int,
+    get_candidates: Callable[[KnowledgeBase, Span], Iterable[Candidate]],
+    overwrite: bool = BACKWARD_OVERWRITE,
+    scorer: Optional[Callable] = entity_linker_score,
+):
+    def _get_candidates_batch(
+        kb: KnowledgeBase, spans: Iterable[Span]
+    ) -> Iterable[Iterable[Candidate]]:
+        for span in spans:
+            yield get_candidates(kb, span)
+
+    def _generate_empty_kb(vocab: Vocab, entity_vector_length: int) -> KnowledgeBase:
+        return KnowledgeBase(vocab, entity_vector_length)
+
+    return EntityLinker(
+        vocab,
+        model,
+        name,
+        labels_discard=labels_discard,
+        n_sents=n_sents,
+        incl_prior=incl_prior,
+        incl_context=incl_context,
+        entity_vector_length=entity_vector_length,
+        get_candidates=get_candidates,
+        get_candidates_batch=_get_candidates_batch,
+        generate_empty_kb=_generate_empty_kb,
+        overwrite=overwrite,
+        scorer=scorer,
+        use_gold_ents=True,
+        candidates_batch_size=1,
+        threshold=None,
+    )
+
+
 class EntityLinker(TrainablePipe):
     """Pipeline component for named entity linking.
 

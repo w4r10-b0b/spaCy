@@ -1,6 +1,27 @@
 """Helpers for Python and platform compatibility."""
 
 import sys
+import warnings
+
+# pydantic.v1 warns on Python 3.14+ even when downstream libraries still rely
+# on it during import. Filter it before importing thinc/confection so
+# `python -W error -c "import spacy"` keeps working on supported runtimes.
+if sys.version_info[:2] >= (3, 14):
+    warnings.filterwarnings(
+        "ignore",
+        message=(
+            "Core Pydantic V1 functionality isn't compatible with Python "
+            "3\\.14 or greater\\."
+        ),
+        category=UserWarning,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message=(
+            "The `__fields__` attribute is deprecated, use the "
+            "`model_fields` class property instead\\."
+        ),
+    )
 
 from thinc.util import copy_array
 

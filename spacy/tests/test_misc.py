@@ -1,6 +1,9 @@
 import ctypes
 import os
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 
 import pytest
 from pydantic import ValidationError
@@ -171,6 +174,63 @@ def test_ascii_filenames():
     root = Path(__file__).parent.parent
     for path in root.glob("**/*"):
         assert all(ord(c) < 128 for c in path.name), path.name
+
+
+def test_import_spacy_with_numpy_under_warning_error():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-W",
+            "error",
+            "-c",
+            (
+                "import numpy; import spacy; "
+                "nlp = spacy.blank('en'); "
+                "doc = nlp.make_doc('hello world'); "
+                "assert doc.text == 'hello world'; "
+                "assert numpy.arange(5).shape == (5,)"
+            ),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_git_version_metadata_is_clean():
+    from spacy.git_info import GIT_VERSION
+
+    assert GIT_VERSION
+    assert GIT_VERSION == GIT_VERSION.strip()
+    assert "\n" not in GIT_VERSION
+    assert "warning:" not in GIT_VERSION.lower()
+
+
+def test_init_config_cli_with_latest_pydantic_under_warning_error():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_path = Path(tmpdir) / "config.cfg"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-W",
+                "error",
+                "-m",
+                "spacy",
+                "init",
+                "config",
+                str(output_path),
+                "--lang",
+                "en",
+                "--pipeline",
+                "ner",
+                "--force",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    assert result.returncode == 0, result.stderr
 
 
 def test_load_model_blank_shortcut():

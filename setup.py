@@ -114,10 +114,15 @@ class build_ext_subclass(build_ext, build_ext_options):
 # Copyright (c) 2005-2020, NumPy Developers.
 # BSD 3-Clause license, see licenses/3rd_party_licenses.txt
 def write_git_info_py(filename="spacy/git_info.py"):
+    def _clean_git_version_output(output):
+        lines = [line.strip() for line in output.decode("ascii", "ignore").splitlines()]
+        lines = [line for line in lines if line]
+        return lines[-1] if lines else "Unknown"
+
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
-        for k in ["SYSTEMROOT", "PATH", "HOME"]:
+        for k in ["SYSTEMROOT", "PATH", "HOME", "TMPDIR", "TMP", "TEMP"]:
             v = os.environ.get(k)
             if v is not None:
                 env[k] = v
@@ -132,7 +137,7 @@ def write_git_info_py(filename="spacy/git_info.py"):
     if Path(".git").exists():
         try:
             out = _minimal_ext_cmd(["git", "rev-parse", "--short", "HEAD"])
-            git_version = out.strip().decode("ascii")
+            git_version = _clean_git_version_output(out)
         except Exception:
             pass
     elif Path(filename).exists():

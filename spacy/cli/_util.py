@@ -21,7 +21,12 @@ from thinc.api import ConfigValidationError, require_gpu
 from thinc.util import gpu_is_available
 from typer.main import get_command
 from wasabi import Printer, msg
-from weasel import app as project_cli
+
+project_cli = None
+try:
+    from weasel import app as project_cli
+except Exception:
+    project_cli = None
 
 from ..compat import Literal
 from ..util import (
@@ -64,7 +69,8 @@ benchmark_cli = typer.Typer(name="benchmark", help=BENCHMARK_HELP, no_args_is_he
 debug_cli = typer.Typer(name="debug", help=DEBUG_HELP, no_args_is_help=True)
 init_cli = typer.Typer(name="init", help=INIT_HELP, no_args_is_help=True)
 
-app.add_typer(project_cli, name="project", help=PROJECT_HELP, no_args_is_help=True)
+if project_cli is not None:
+    app.add_typer(project_cli, name="project", help=PROJECT_HELP, no_args_is_help=True)
 app.add_typer(debug_cli)
 app.add_typer(benchmark_cli)
 app.add_typer(init_cli)
